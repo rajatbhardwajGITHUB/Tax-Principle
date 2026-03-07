@@ -1,0 +1,178 @@
+### API Test Collection
+### Use with VS Code REST Client extension.
+### Update @baseUrl if your server runs on a different host/port.
+
+@baseUrl = http://localhost:8080
+@contentType = application/json
+@userEmail = user1@example.com
+@userPassword = User@12345
+@adminEmail = admin1@example.com
+@adminPassword = Admin@12345
+@accessToken = REPLACE_WITH_ACCESS_TOKEN
+@refreshToken = REPLACE_WITH_REFRESH_TOKEN
+@serviceId = 1
+@purchaseId = 1
+
+### ------------------------------------------------------------
+### Health / sanity
+### ------------------------------------------------------------
+GET {{baseUrl}}/actuator/health
+
+### ------------------------------------------------------------
+### Phase 1: Auth
+### ------------------------------------------------------------
+
+### Register USER
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "User One",
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}",
+  "phoneNumber": "9999999999",
+  "role": "USER"
+}
+
+### Register ADMIN
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Admin One",
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "phoneNumber": "8888888888",
+  "role": "ADMIN"
+}
+
+### Login USER
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+### Login ADMIN
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Refresh token
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### ------------------------------------------------------------
+### Phase 2: Service Catalog
+### ------------------------------------------------------------
+
+### USER - List active services
+GET {{baseUrl}}/services
+Authorization: Bearer {{accessToken}}
+
+### USER - Get service detail
+GET {{baseUrl}}/services/{{serviceId}}
+Authorization: Bearer {{accessToken}}
+
+### ADMIN - Create service
+POST {{baseUrl}}/admin/services
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "code": "GST-FILING",
+  "name": "GST Filing",
+  "description": "Monthly GST filing support",
+  "price": 499.00,
+  "active": true
+}
+
+### ADMIN - Update service
+PUT {{baseUrl}}/admin/services/{{serviceId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "GST Filing Pro",
+  "description": "Updated plan",
+  "price": 699.00,
+  "active": true
+}
+
+### ADMIN - Change service status
+PATCH {{baseUrl}}/admin/services/{{serviceId}}/status
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "active": false
+}
+
+### ------------------------------------------------------------
+### Phase 3: Purchases + Tracking
+### ------------------------------------------------------------
+
+### USER - Create purchase
+POST {{baseUrl}}/purchases
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "serviceId": {{serviceId}},
+  "paymentReference": "PAY-TEST-0001"
+}
+
+### USER - List my purchases
+GET {{baseUrl}}/purchases/me?page=0&size=10&sort=purchasedAt,desc
+Authorization: Bearer {{accessToken}}
+
+### USER - Purchase detail
+GET {{baseUrl}}/purchases/me/{{purchaseId}}
+Authorization: Bearer {{accessToken}}
+
+### ADMIN - List all purchases
+GET {{baseUrl}}/admin/purchases?page=0&size=10&sort=purchasedAt,desc
+Authorization: Bearer {{accessToken}}
+
+### ADMIN - Purchase detail
+GET {{baseUrl}}/admin/purchases/{{purchaseId}}
+Authorization: Bearer {{accessToken}}
+
+### ------------------------------------------------------------
+### Phase 4: Dashboard
+### ------------------------------------------------------------
+
+### USER - Dashboard purchase table
+GET {{baseUrl}}/dashboard/me/purchases?from=2026-01-01&to=2026-12-31&page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ADMIN - Dashboard purchases
+GET {{baseUrl}}/admin/dashboard/purchases?from=2026-01-01&to=2026-12-31&page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ADMIN - Dashboard metrics
+GET {{baseUrl}}/admin/dashboard/metrics?from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{accessToken}}
+
+### ------------------------------------------------------------
+### Authorization checks (expected: 403 for USER token on admin routes)
+### ------------------------------------------------------------
+
+### USER token should fail on admin route
+GET {{baseUrl}}/admin/purchases?page=0&size=10
+Authorization: Bearer {{accessToken}}
+

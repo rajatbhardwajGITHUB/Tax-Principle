@@ -8,6 +8,6 @@ import com.example.Usermangement.Bean.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
 
-   Optional findById(Long id);
+   Optional<User> findByEmail(String email);
 
 }
