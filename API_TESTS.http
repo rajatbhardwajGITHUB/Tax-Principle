@@ -8,8 +8,8 @@
 @userPassword = User@12345
 @adminEmail = admin1@example.com
 @adminPassword = Admin@12345
-@accessToken = REPLACE_WITH_ACCESS_TOKEN
-@refreshToken = REPLACE_WITH_REFRESH_TOKEN
+@accessToken = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImlhdCI6MTc3Mjk2Mzk2MiwiZXhwIjoxNzcyOTY0ODYyfQ.BndrX-2-Uz7XOWkdBT7IaO-Taaziw4BMtk-roefVNh9OjHKfeNB_yi4_yH2deEZdpo1JPk54onw0G6f2HGyk1w
+@refreshToken = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImlhdCI6MTc3Mjk2NDAzMCwiZXhwIjoxNzczNTY4ODMwfQ.c1vcBBH_046ZJd-JhmXdqa1mj9Xa-51OvZJD55jtcJem7FHb8Y5AUwvP6nQX4J9OSX4WwO42I9puzJoLhY3UAg
 @serviceId = 1
 @purchaseId = 1
 

@@ -51,14 +51,14 @@ Target: Week 1
 - [x] Create auth request/response DTOs
 - [x] Implement password hashing with BCrypt
 - [x] Implement JWT access token generation
-- [-] Implement refresh token persistence/rotation
+- [x] Implement refresh token persistence/rotation
 - [ ] Add auth exception handling
 - [x] Add validation (`@Valid`) for all auth payloads
 
 ### Security Rules
 - [x] Permit `/auth/**`
 - [x] Require authentication for all other APIs
-- [ ] Add JWT filter in security chain
+- [x] Add JWT filter in security chain
 
 Definition of done:
 - Register/login works from API client

@@ -8,6 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.example.Usermangement.Bean.User;
 import com.example.Usermangement.Enums.Role;
+import com.example.Usermangement.Exceptions.EmailAlreadyRegisteredException;
+import com.example.Usermangement.Exceptions.InvalidCredentialsException;
+import com.example.Usermangement.Exceptions.InvalidRefreshTokenException;
+import com.example.Usermangement.Exceptions.UserNotFoundException;
 import com.example.Usermangement.Model.AuthResponse;
 import com.example.Usermangement.Model.LoginRequest;
 import com.example.Usermangement.Model.RefreshRequest;
@@ -37,7 +41,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new EmailAlreadyRegisteredException("Email already registered");
         }
 
         User user = new User();
@@ -66,7 +70,7 @@ public class AuthService {
                         request.getPassword()));
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         UserDetails userDetails = new CustomUserDetails(user);
         String accessToken = jwtService.generateAccessToken(userDetails);
@@ -83,16 +87,16 @@ public class AuthService {
         String email = jwtService.extractUsername(token);
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         UserDetails userDetails = new CustomUserDetails(user);
 
         if (!jwtService.isTokenValid(token, userDetails)) {
-            throw new IllegalArgumentException("Invalid refresh token");
+            throw new InvalidRefreshTokenException("Invalid refresh token");
         }
 
         if (user.getRefreshToken() == null || !user.getRefreshToken().equals(token)) {
-            throw new IllegalArgumentException("Refresh token not recognized");
+            throw new InvalidRefreshTokenException("Refresh token not recognized");
         }
 
         String newAccessToken = jwtService.generateAccessToken(userDetails);
@@ -104,7 +108,7 @@ public class AuthService {
 
     public void logout(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         user.setRefreshToken(null);
         userRepository.save(user);
     }
