@@ -52,7 +52,7 @@ Target: Week 1
 - [x] Implement password hashing with BCrypt
 - [x] Implement JWT access token generation
 - [x] Implement refresh token persistence/rotation
-- [ ] Add auth exception handling
+- [X] Add auth exception handling
 - [x] Add validation (`@Valid`) for all auth payloads
 
 ### Security Rules
