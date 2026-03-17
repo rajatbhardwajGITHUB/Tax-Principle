@@ -70,4 +70,13 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), req.getRequestURI());
     }
 
+    @ExceptionHandler(ServiceNotFoundException.class)
+    public ResponseEntity<ApiError> handleServiceNotFound(ServiceNotFoundException ex, HttpServletRequest req){
+        return build(HttpStatus.NOT_FOUND,ex.getMessage(), req.getRequestURI());
+    }
+
+    @ExceptionHandler(ServiceAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleServiceAlreadyExists(ServiceAlreadyExistsException ex, HttpServletRequest req){
+        return build()HttpStatus.CONFLICT, ex.getMessage(), req.getRequestURI());
+    }
 }

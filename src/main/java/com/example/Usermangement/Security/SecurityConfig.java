@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.Usermangement.Enums.Role;
+
 @Configuration
 public class SecurityConfig {
 
@@ -19,10 +21,12 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
+
    
     public SecurityConfig(UserDetailsService uds, JwtAuthFilter jwtAuth){
         this.userDetailsService = uds;
         this.jwtAuthFilter = jwtAuth;
+        
     }
 
     @Bean
@@ -33,6 +37,7 @@ public class SecurityConfig {
             .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
