@@ -32,9 +32,25 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(unique = true)
     private String phoneNumber;
 
     private String refreshToken;
+
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
+    private String signupOtp;
+
+    private LocalDateTime signupOtpExpiresAt;
+
+    private String loginOtp;
+
+    private LocalDateTime loginOtpExpiresAt;
+
+    private String passwordResetOtp;
+
+    private LocalDateTime passwordResetOtpExpiresAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -98,6 +114,62 @@ public class User {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getSignupOtp() {
+        return signupOtp;
+    }
+
+    public void setSignupOtp(String signupOtp) {
+        this.signupOtp = signupOtp;
+    }
+
+    public LocalDateTime getSignupOtpExpiresAt() {
+        return signupOtpExpiresAt;
+    }
+
+    public void setSignupOtpExpiresAt(LocalDateTime signupOtpExpiresAt) {
+        this.signupOtpExpiresAt = signupOtpExpiresAt;
+    }
+
+    public String getLoginOtp() {
+        return loginOtp;
+    }
+
+    public void setLoginOtp(String loginOtp) {
+        this.loginOtp = loginOtp;
+    }
+
+    public LocalDateTime getLoginOtpExpiresAt() {
+        return loginOtpExpiresAt;
+    }
+
+    public void setLoginOtpExpiresAt(LocalDateTime loginOtpExpiresAt) {
+        this.loginOtpExpiresAt = loginOtpExpiresAt;
+    }
+
+    public String getPasswordResetOtp() {
+        return passwordResetOtp;
+    }
+
+    public void setPasswordResetOtp(String passwordResetOtp) {
+        this.passwordResetOtp = passwordResetOtp;
+    }
+
+    public LocalDateTime getPasswordResetOtpExpiresAt() {
+        return passwordResetOtpExpiresAt;
+    }
+
+    public void setPasswordResetOtpExpiresAt(LocalDateTime passwordResetOtpExpiresAt) {
+        this.passwordResetOtpExpiresAt = passwordResetOtpExpiresAt;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -17,6 +17,8 @@ public interface ServiceCatalogService {
 
     Page<ServiceResponse> listActive(Pageable pageable);
 
+    Page<ServiceResponse> listAll(Pageable pageable);
+
     ServiceResponse getById(Long id);
 
     ServiceResponse getByCode(String code);

@@ -6,8 +6,11 @@
 @contentType = application/json
 @userEmail = user1@example.com
 @userPassword = User@12345
+@userPhone = 9999999999
 @adminEmail = admin1@example.com
 @adminPassword = Admin@12345
+@adminPhone = 8888888888
+@otp = 123456
 @accessToken = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImlhdCI6MTc3Mjk2Mzk2MiwiZXhwIjoxNzcyOTY0ODYyfQ.BndrX-2-Uz7XOWkdBT7IaO-Taaziw4BMtk-roefVNh9OjHKfeNB_yi4_yH2deEZdpo1JPk54onw0G6f2HGyk1w
 @refreshToken = eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyMUBleGFtcGxlLmNvbSIsImlhdCI6MTc3Mjk2NDAzMCwiZXhwIjoxNzczNTY4ODMwfQ.c1vcBBH_046ZJd-JhmXdqa1mj9Xa-51OvZJD55jtcJem7FHb8Y5AUwvP6nQX4J9OSX4WwO42I9puzJoLhY3UAg
 @serviceId = 1
@@ -22,32 +25,50 @@ GET {{baseUrl}}/actuator/health
 ### Phase 1: Auth
 ### ------------------------------------------------------------
 
-### Register USER
-POST {{baseUrl}}/auth/register
+### Register USER - Initiate OTP
+POST {{baseUrl}}/auth/register/initiate
 Content-Type: {{contentType}}
 
 {
   "name": "User One",
   "email": "{{userEmail}}",
   "password": "{{userPassword}}",
-  "phoneNumber": "9999999999",
+  "phoneNumber": "{{userPhone}}",
   "role": "USER"
 }
 
-### Register ADMIN
-POST {{baseUrl}}/auth/register
+### Register USER - Verify OTP
+POST {{baseUrl}}/auth/register/verify
+Content-Type: {{contentType}}
+
+{
+  "email": "{{userEmail}}",
+  "otp": "{{otp}}"
+}
+
+### Register ADMIN - Initiate OTP
+POST {{baseUrl}}/auth/register/initiate
 Content-Type: {{contentType}}
 
 {
   "name": "Admin One",
   "email": "{{adminEmail}}",
   "password": "{{adminPassword}}",
-  "phoneNumber": "8888888888",
+  "phoneNumber": "{{adminPhone}}",
   "role": "ADMIN"
 }
 
-### Login USER
-POST {{baseUrl}}/auth/login
+### Register ADMIN - Verify OTP
+POST {{baseUrl}}/auth/register/verify
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "otp": "{{otp}}"
+}
+
+### Login USER - Initiate OTP
+POST {{baseUrl}}/auth/login/initiate
 Content-Type: {{contentType}}
 
 {
@@ -55,13 +76,49 @@ Content-Type: {{contentType}}
   "password": "{{userPassword}}"
 }
 
-### Login ADMIN
-POST {{baseUrl}}/auth/login
+### Login USER - Verify OTP
+POST {{baseUrl}}/auth/login/verify
+Content-Type: {{contentType}}
+
+{
+  "email": "{{userEmail}}",
+  "otp": "{{otp}}"
+}
+
+### Login ADMIN - Initiate OTP
+POST {{baseUrl}}/auth/login/initiate
 Content-Type: {{contentType}}
 
 {
   "email": "{{adminEmail}}",
   "password": "{{adminPassword}}"
+}
+
+### Login ADMIN - Verify OTP
+POST {{baseUrl}}/auth/login/verify
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "otp": "{{otp}}"
+}
+
+### Forgot password (send OTP)
+POST {{baseUrl}}/auth/password/forgot
+Content-Type: {{contentType}}
+
+{
+  "email": "{{userEmail}}"
+}
+
+### Reset password with OTP
+POST {{baseUrl}}/auth/password/reset
+Content-Type: {{contentType}}
+
+{
+  "email": "{{userEmail}}",
+  "otp": "{{otp}}",
+  "newPassword": "NewUser@12345"
 }
 
 ### Refresh token
@@ -81,15 +138,15 @@ Authorization: Bearer {{accessToken}}
 ### ------------------------------------------------------------
 
 ### USER - List active services
-GET {{baseUrl}}/services
+GET {{baseUrl}}/service/user/services
 Authorization: Bearer {{accessToken}}
 
 ### USER - Get service detail
-GET {{baseUrl}}/services/{{serviceId}}
+GET {{baseUrl}}/service/user/services/{{serviceId}}
 Authorization: Bearer {{accessToken}}
 
 ### ADMIN - Create service
-POST {{baseUrl}}/admin/services
+POST {{baseUrl}}/service/admin/services
 Content-Type: {{contentType}}
 Authorization: Bearer {{accessToken}}
 
@@ -102,7 +159,7 @@ Authorization: Bearer {{accessToken}}
 }
 
 ### ADMIN - Update service
-PUT {{baseUrl}}/admin/services/{{serviceId}}
+PUT {{baseUrl}}/service/admin/services/updateService/{{serviceId}}
 Content-Type: {{contentType}}
 Authorization: Bearer {{accessToken}}
 
@@ -114,13 +171,8 @@ Authorization: Bearer {{accessToken}}
 }
 
 ### ADMIN - Change service status
-PATCH {{baseUrl}}/admin/services/{{serviceId}}/status
-Content-Type: {{contentType}}
+PATCH {{baseUrl}}/service/admin/services/updatedStatus/{{serviceId}}?status=false
 Authorization: Bearer {{accessToken}}
-
-{
-  "active": false
-}
 
 ### ------------------------------------------------------------
 ### Phase 3: Purchases + Tracking
@@ -175,4 +227,3 @@ Authorization: Bearer {{accessToken}}
 ### USER token should fail on admin route
 GET {{baseUrl}}/admin/purchases?page=0&size=10
 Authorization: Bearer {{accessToken}}
-

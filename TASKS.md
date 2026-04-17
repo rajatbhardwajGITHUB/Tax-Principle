@@ -71,24 +71,24 @@ Owner: Backend
 Target: Week 2
 
 ### Data Model
-- [ ] Create `ServiceItem` entity
-- [ ] Add fields: `code`, `name`, `description`, `price`, `active`, timestamps
-- [ ] Add unique constraints for `code`
+- [x] Create `ServiceItem` entity
+- [x] Add fields: `code`, `name`, `description`, `price`, `active`, timestamps
+- [x] Add unique constraints for `code`
 
 ### Endpoints
 User:
-- [ ] `GET /services`
-- [ ] `GET /services/{id}`
+- [x] `GET /service/user/services`
+- [x] `GET /service/user/services/{id}`
 
 Admin:
-- [ ] `POST /admin/services`
-- [ ] `PUT /admin/services/{id}`
-- [ ] `PATCH /admin/services/{id}/status`
+- [x] `POST /service/admin/services`
+- [x] `PUT /service/admin/services/updateService/{id}`
+- [x] `PATCH /service/admin/services/updatedStatus/{id}/`
 
 ### Tasks
-- [ ] Add filtering (active only for users)
-- [ ] Add pagination for list endpoint
-- [ ] Add request/response DTO mapping
+- [x] Add filtering (active only for users)
+- [x] Add pagination for list endpoint
+- [x] Add request/response DTO mapping
 
 Definition of done:
 - User can view active services
@@ -101,25 +101,25 @@ Owner: Backend
 Target: Week 3
 
 ### Data Model
-- [ ] Create `Purchase` entity
-- [ ] Create `PurchaseEvent` audit entity
-- [ ] Add purchase status enum (`CREATED`, `SUCCESS`, `FAILED`, `REFUNDED`)
+- [x] Create `Purchase` entity
+- [x] Create `PurchaseEvent` audit entity
+- [x] Add purchase status enum (`CREATED`, `SUCCESS`, `FAILED`, `REFUNDED`)
 
 ### Endpoints
 User:
-- [ ] `POST /purchases`
-- [ ] `GET /purchases/me`
-- [ ] `GET /purchases/me/{id}`
+- [x] `POST /purchases`
+- [x] `GET /purchases/me`
+- [x] `GET /purchases/me/{id}`
 
 Admin:
-- [ ] `GET /admin/purchases`
-- [ ] `GET /admin/purchases/{id}`
+- [x] `GET /admin/purchases`
+- [x] `GET /admin/purchases/{id}`
 
 ### Tasks
-- [ ] Validate service is active before purchase
-- [ ] Record purchase event on create/status change
-- [ ] Prevent user from accessing other user purchases
-- [ ] Add pagination and filtering by date/status/service
+- [x] Validate service is active before purchase
+- [x] Record purchase event on create/status change
+- [x] Prevent user from accessing other user purchases
+- [x] Add pagination and filtering by date/status/service
 
 Definition of done:
 - User purchase is persisted and auditable
@@ -133,26 +133,26 @@ Target: Week 4
 
 ### Endpoints
 User:
-- [ ] `GET /dashboard/me/purchases`
+- [x] `GET /dashboard/me/purchases`
 
 Admin:
-- [ ] `GET /admin/dashboard/purchases`
-- [ ] `GET /admin/dashboard/metrics`
+- [x] `GET /admin/dashboard/purchases`
+- [x] `GET /admin/dashboard/metrics`
 
 ### User Dashboard Table Fields
-- [ ] `purchaseId`
-- [ ] `serviceName`
-- [ ] `amount`
-- [ ] `status`
-- [ ] `purchasedAt`
+- [x] `purchaseId`
+- [x] `serviceName`
+- [x] `amount`
+- [x] `status`
+- [x] `purchasedAt`
 
 ### Admin Dashboard Extra Fields
-- [ ] `userId`
-- [ ] `userEmail`
+- [x] `userId`
+- [x] `userEmail`
 
 ### Tasks
-- [ ] Add date range filters (`from`, `to`)
-- [ ] Add metrics (total purchases, success count, revenue)
+- [x] Add date range filters (`from`, `to`)
+- [x] Add metrics (total purchases, success count, revenue)
 
 Definition of done:
 - User sees own purchase table data
@@ -164,7 +164,7 @@ Definition of done:
 Owner: Backend
 Target: Week 5
 
-- [ ] Add global exception handler and standard error response
+- [-] Add global exception handler and standard error response
 - [ ] Add OpenAPI/Swagger documentation
 - [ ] Add integration tests for auth/service/purchase/dashboard flows
 - [ ] Add role-based authorization tests (`USER` vs `ADMIN`)
@@ -181,8 +181,8 @@ Definition of done:
 ## Non-Functional Checklist
 - [ ] Use UTC timestamps in DB and API
 - [ ] Add indexes for high-usage queries
-- [ ] Add request validation to every write endpoint
-- [ ] Avoid returning internal entities directly (DTO only)
+- [x] Add request validation to every write endpoint
+- [x] Avoid returning internal entities directly (DTO only)
 - [ ] Keep secrets out of repo (`application.properties` -> env vars)
 - [ ] Enforce consistent API response shape
 
@@ -202,13 +202,13 @@ Week 1:
 - [ ] Foundation + Auth complete
 
 Week 2:
-- [ ] Services complete
+- [x] Services complete
 
 Week 3:
-- [ ] Purchases + tracking complete
+- [x] Purchases + tracking complete
 
 Week 4:
-- [ ] Dashboard complete
+- [x] Dashboard complete
 
 Week 5:
 - [ ] Tests, docs, hardening complete

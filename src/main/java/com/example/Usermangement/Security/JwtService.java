@@ -35,8 +35,16 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails, accessTokenExpirationMs);
     }
 
+    public String generateAccessToken(UserDetails userDetails, Map<String, Object> extraClaims) {
+        return generateToken(extraClaims, userDetails, accessTokenExpirationMs);
+    }
+
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, refreshTokenExpirationMs);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails, Map<String, Object> extraClaims) {
+        return generateToken(extraClaims, userDetails, refreshTokenExpirationMs);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

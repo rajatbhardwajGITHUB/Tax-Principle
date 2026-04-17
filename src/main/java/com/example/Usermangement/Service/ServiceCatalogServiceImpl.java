@@ -1,7 +1,7 @@
 package com.example.Usermangement.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 import com.example.Usermangement.Exceptions.ServiceNotFoundException;
 
@@ -43,6 +43,7 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService{
         item.setPrice(request.getPrice());
         item.setCreatedAt(date);
         item.setUpdatedAt(date);
+        item.setActive(request.getActive());
         ServiceItem saved = repo.save(item);
         return map(saved);
     }
@@ -62,20 +63,37 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService{
         if(result.isEmpty()){
             throw new ServiceNotFoundException("No Service Present");
         }
-        
-        return null;
+        return result.map(this::map);
     }
 
     @Override
     public void setActive(Long id, boolean active) {
-        // TODO Auto-generated method stub
-        
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        ServiceItem item = repo.findById(id)
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found"));
+        item.setActive(active);
+        item.setUpdatedAt(LocalDateTime.now());
+        repo.save(item);
     }
 
     @Override
     public ServiceResponse update(Long id, ServiceUpdateRequest request) {
-        // TODO Auto-generated method stub
-        return null;
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        ServiceItem item = repo.findById(id)
+                .orElseThrow(() -> new ServiceNotFoundException("Service not found"));
+        item.setName(request.getName());
+        item.setDescription(request.getDescription());
+        item.setPrice(new BigDecimal(request.getPrice()));
+        if (request.getActive() != null) {
+            item.setActive(request.getActive());
+        }
+        item.setUpdatedAt(LocalDateTime.now());
+        ServiceItem saved = repo.save(item);
+        return map(saved);
     }
 
     @Override
@@ -85,8 +103,8 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService{
 
     private ServiceResponse map(ServiceItem item) {
     ServiceResponse res = new ServiceResponse();
-    res.setId(item.getId());]
-    
+    res.setId(item.getId());
+
     res.setCode(item.getCode());
     res.setName(item.getName());
     res.setDescription(item.getDescription());
@@ -94,6 +112,10 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService{
     res.setActive(item.getActive());
     return res;
 }
-    
+
+@Override
+public Page<ServiceResponse> listAll(Pageable pageable){
+    return repo.findAll(pageable).map(this::map);
+}
 
 }
