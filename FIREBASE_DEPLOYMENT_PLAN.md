@@ -27,6 +27,22 @@ We are using this structure because each tool matches the job it does best.
 - Keeping frontend and backend deployment separate reduces risk. A frontend-only change should not force a backend redeploy, and vice versa.
 - Using a tracked plan file prevents the setup from becoming tribal knowledge. Anyone can open this file and see the next step.
 
+## Current Blocker
+
+### Status
+- `[!]` Google Cloud billing setup is blocked by payment-method verification
+
+### Impact
+- Cloud SQL instance creation is blocked
+- Cloud Run production deployment is blocked
+- Custom API domain setup is blocked until the backend exists
+
+### What We Can Still Do Now
+- Prepare the backend GitHub Actions workflow
+- Finalize frontend production API wiring
+- Tighten CORS and env-var documentation
+- Keep local build and test checks passing
+
 ## Recommended Architecture
 
 ### Production Flow
@@ -96,6 +112,12 @@ Make GitHub the canonical place where code changes are reviewed and merged.
 - The repository is on GitHub.
 - `main` is protected.
 - All future work happens through pull requests.
+
+### Phase 1 Result
+- `[x]` Repo moved to the new GitHub account
+- `[x]` `main` branch protection enabled
+- `[x]` Local repo is connected to the new remote
+- `[ ]` Backend deployment workflow still needs to be finalized
 
 ## Phase 2: Create The Firebase Project
 
