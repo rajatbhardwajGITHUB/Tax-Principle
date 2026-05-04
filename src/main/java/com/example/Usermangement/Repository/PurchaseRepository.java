@@ -16,6 +16,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
     Optional<Purchase> findByIdAndUserId(Long id, Long userId);
 
+    Optional<Purchase> findByPaymentReference(String paymentReference);
+
     boolean existsByPaymentReference(String paymentReference);
 
     @Query("""
