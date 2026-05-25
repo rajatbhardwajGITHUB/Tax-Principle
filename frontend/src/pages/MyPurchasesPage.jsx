@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { paymentApi } from '../api/paymentApi';
 import { purchaseApi } from '../api/purchaseApi';
 import { serviceApi } from '../api/serviceApi';
 import { parseApiError } from '../api/httpClient';
@@ -7,11 +8,28 @@ import Loader from '../components/Loader';
 import ErrorAlert from '../components/ErrorAlert';
 import Pagination from '../components/Pagination';
 
+let razorpayScriptPromise = null;
+
+function loadRazorpayScript() {
+  if (window.Razorpay) return Promise.resolve(true);
+  if (!razorpayScriptPromise) {
+    razorpayScriptPromise = new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  }
+  return razorpayScriptPromise;
+}
+
 export default function MyPurchasesPage() {
   const [page, setPage] = useState(0);
   const [size] = useState(10);
   const [serviceId, setServiceId] = useState('');
-  const [paymentReference, setPaymentReference] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
   const [createError, setCreateError] = useState('');
   const queryClient = useQueryClient();
 
@@ -26,10 +44,55 @@ export default function MyPurchasesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (payload) => purchaseApi.create(payload),
+    mutationFn: async () => {
+      if (!serviceId) {
+        throw new Error('Select a service before starting payment');
+      }
+
+      const order = await paymentApi.createOrder({ serviceId: Number(serviceId) });
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Unable to load Razorpay checkout');
+      }
+
+      return new Promise((resolve, reject) => {
+        const razorpay = new window.Razorpay({
+          key: order.keyId,
+          amount: order.amountInPaise,
+          currency: order.currency,
+          name: 'Tax Principal',
+          description: order.serviceName,
+          order_id: order.orderId,
+          handler: async (response) => {
+            try {
+              const purchase = await paymentApi.verifyPayment({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature
+              });
+              resolve(purchase);
+            } catch (verificationError) {
+              reject(verificationError);
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error('Payment window was closed before completion'))
+          },
+          theme: {
+            color: '#1f4f82'
+          }
+        });
+
+        razorpay.on('payment.failed', (response) => {
+          reject(new Error(response?.error?.description || 'Payment failed'));
+        });
+
+        razorpay.open();
+      });
+    },
     onSuccess: () => {
       setCreateError('');
-      setPaymentReference('');
+      setStatusMessage('Payment completed successfully.');
       queryClient.invalidateQueries({ queryKey: ['my-purchases'] });
       queryClient.invalidateQueries({ queryKey: ['my-dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['admin-purchases'] });
@@ -37,6 +100,7 @@ export default function MyPurchasesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-metrics'] });
     },
     onError: (error) => {
+      setStatusMessage('');
       setCreateError(parseApiError(error));
     }
   });
@@ -52,20 +116,15 @@ export default function MyPurchasesPage() {
 
   const handleCreate = async (event) => {
     event.preventDefault();
-    if (!serviceId || !paymentReference.trim()) {
-      setCreateError('Select service and provide payment reference');
-      return;
-    }
-    await createMutation.mutateAsync({
-      serviceId: Number(serviceId),
-      paymentReference: paymentReference.trim()
-    });
+    setCreateError('');
+    setStatusMessage('');
+    await createMutation.mutateAsync();
   };
 
   return (
     <section className="page-card">
       <h1>My Purchases</h1>
-      <p className="muted">Create and track your purchase records.</p>
+      <p className="muted">Select a service and pay through Razorpay checkout.</p>
 
       <form className="purchase-create-row" onSubmit={handleCreate}>
         <select value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
@@ -76,17 +135,12 @@ export default function MyPurchasesPage() {
             </option>
           ))}
         </select>
-        <input
-          type="text"
-          placeholder="Payment reference"
-          value={paymentReference}
-          onChange={(e) => setPaymentReference(e.target.value)}
-        />
         <button type="submit" className="btn" disabled={createMutation.isPending}>
-          {createMutation.isPending ? 'Creating...' : 'Create Purchase'}
+          {createMutation.isPending ? 'Opening Checkout...' : 'Pay With Razorpay'}
         </button>
       </form>
 
+      {statusMessage ? <p className="muted">{statusMessage}</p> : null}
       <ErrorAlert message={createError || error} />
       {purchasesQuery.isLoading ? <Loader label="Loading purchases..." /> : null}
 

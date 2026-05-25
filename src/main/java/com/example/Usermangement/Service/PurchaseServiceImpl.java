@@ -51,17 +51,26 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     public PurchaseResponse create(String email, PurchaseCreateRequest request) {
+        return createPurchase(email, request.getServiceId(), request.getPaymentReference(), PurchaseStatus.CREATED);
+    }
+
+    @Override
+    public PurchaseResponse createPaidPurchase(String email, Long serviceId, String paymentReference) {
+        return createPurchase(email, serviceId, paymentReference, PurchaseStatus.SUCCESS);
+    }
+
+    private PurchaseResponse createPurchase(String email, Long serviceId, String paymentReference, PurchaseStatus status) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        ServiceItem service = serviceItemRepository.findById(request.getServiceId())
+        ServiceItem service = serviceItemRepository.findById(serviceId)
             .orElseThrow(() -> new ServiceNotFoundException("Service not found"));
 
         if (!Boolean.TRUE.equals(service.getActive())) {
             throw new InactiveServicePurchaseException("Selected service is inactive");
         }
 
-        if (purchaseRepository.existsByPaymentReference(request.getPaymentReference())) {
+        if (purchaseRepository.existsByPaymentReference(paymentReference)) {
             throw new DuplicatePaymentReferenceException("Payment reference already exists");
         }
 
@@ -69,12 +78,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchase.setUser(user);
         purchase.setServiceItem(service);
         purchase.setAmount(service.getPrice());
-        purchase.setStatus(PurchaseStatus.CREATED);
-        purchase.setPaymentReference(request.getPaymentReference());
+        purchase.setStatus(status);
+        purchase.setPaymentReference(paymentReference);
         purchase.setPurchasedAt(LocalDateTime.now());
 
         Purchase saved = purchaseRepository.save(purchase);
-        recordEvent(saved, "PURCHASE_CREATED", "Purchase created successfully");
+        recordEvent(saved, status == PurchaseStatus.SUCCESS ? "PURCHASE_PAID" : "PURCHASE_CREATED",
+            status == PurchaseStatus.SUCCESS ? "Purchase completed successfully" : "Purchase created successfully");
         return map(saved);
     }
 

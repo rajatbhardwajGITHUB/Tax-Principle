@@ -17,6 +17,8 @@ public interface PurchaseService {
 
     PurchaseResponse create(String email, PurchaseCreateRequest request);
 
+    PurchaseResponse createPaidPurchase(String email, Long serviceId, String paymentReference);
+
     Page<PurchaseResponse> listMy(
         String email,
         LocalDate from,
