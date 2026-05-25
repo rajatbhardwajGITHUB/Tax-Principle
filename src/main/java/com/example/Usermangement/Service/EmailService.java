@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,23 +23,45 @@ public class EmailService {
     @Value("${app.mail.from:no-reply@example.com}")
     private String fromAddress;
 
+    @Value("${spring.mail.host:}")
+    private String mailHost;
+
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
     public EmailService(ObjectProvider<JavaMailSender> mailSenderProvider) {
         this.mailSender = mailSenderProvider.getIfAvailable();
     }
 
     public boolean sendOtpEmail(String toEmail, String purpose, String otp) {
-        if (!mailEnabled || mailSender == null) {
-            log.warn("Email delivery is disabled or not configured. OTP email to {} was not sent.", toEmail);
+        if (!canSendMail()) {
+            log.warn("Email delivery is disabled or not fully configured. OTP email to {} was not sent.", toEmail);
             return false;
         }
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromAddress);
-        message.setTo(toEmail);
-        message.setSubject(buildSubject(purpose));
-        message.setText(buildBody(purpose, otp));
-        mailSender.send(message);
-        return true;
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromAddress);
+            message.setTo(toEmail);
+            message.setSubject(buildSubject(purpose));
+            message.setText(buildBody(purpose, otp));
+            mailSender.send(message);
+            return true;
+        } catch (MailException ex) {
+            log.warn("Failed to send OTP email to {}. Mail delivery will be skipped.", toEmail, ex);
+            return false;
+        }
+    }
+
+    private boolean canSendMail() {
+        return mailEnabled
+                && mailSender != null
+                && StringUtils.hasText(mailHost)
+                && StringUtils.hasText(mailUsername)
+                && StringUtils.hasText(mailPassword);
     }
 
     private String buildSubject(String purpose) {
