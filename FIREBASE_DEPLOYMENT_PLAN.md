@@ -15,14 +15,14 @@ This repository has two parts:
 
 Because of that split, the best Firebase setup is:
 - Firebase Hosting for the React frontend
-- Cloud Run for the Spring Boot backend
+- Railway for the Spring Boot backend
 - GitHub Actions for continuous integration and deployment
 
 ## Why This Setup
 We are using this structure because each tool matches the job it does best.
 
 - Firebase Hosting is a very good fit for a Vite frontend because it serves static assets quickly over a CDN.
-- Cloud Run is a better fit for Spring Boot than Firebase App Hosting because the backend is a Java service with database access, security, and email support.
+- Railway is a better fit for Spring Boot than Firebase App Hosting for this project because the backend is a Java service with database access, security, and email support, and Cloud Run is currently blocked by billing.
 - GitHub Actions gives us a repeatable pipeline so code can be tested before it is deployed.
 - Keeping frontend and backend deployment separate reduces risk. A frontend-only change should not force a backend redeploy, and vice versa.
 - Using a tracked plan file prevents the setup from becoming tribal knowledge. Anyone can open this file and see the next step.
@@ -36,9 +36,11 @@ We are using this structure because each tool matches the job it does best.
 - Cloud SQL instance creation is blocked
 - Cloud Run production deployment is blocked
 - Custom API domain setup is blocked until the backend exists
+- This does not block the Railway backend path.
 
 ### What We Can Still Do Now
 - Prepare the backend GitHub Actions workflow
+- Prepare the Railway deployment and autodeploy setup
 - Finalize frontend production API wiring
 - Tighten CORS and env-var documentation
 - Keep local build and test checks passing
@@ -52,7 +54,7 @@ We are using this structure because each tool matches the job it does best.
 4. Firebase Hosting preview is created for the frontend if needed.
 5. After review, the PR is merged into `main`.
 6. GitHub Actions deploys the frontend to Firebase Hosting.
-7. GitHub Actions or Cloud Run deploys the backend if backend files changed.
+7. Railway deploys the backend when the main branch changes, if backend files changed.
 8. The live app points to the production backend URL.
 
 ### Why This Flow
@@ -180,33 +182,34 @@ If this app uses client-side routing, direct visits to `/login`, `/admin/service
 - Refreshing a nested route does not produce a 404.
 - The deployed frontend loads correctly from Firebase.
 
-## Phase 4: Keep The Spring Backend On Cloud Run
+## Phase 4: Keep The Spring Backend On Railway
 
 ### Goal
-Deploy the Spring Boot backend to Cloud Run without requiring Docker on the local machine.
+Deploy the Spring Boot backend to Railway without requiring Docker on the local machine.
 
 ### Tasks
 - [ ] Create a production build for the backend
-- [ ] Deploy the backend from source to Cloud Run using Google Cloud buildpacks
-- [ ] Configure Cloud Run environment variables
+- [ ] Connect the GitHub repository to Railway
+- [ ] Deploy the backend from source to Railway using the Java build detector
+- [ ] Configure Railway environment variables
 - [ ] Connect the backend to the production MariaDB database
 - [ ] Verify the backend health endpoint or startup logs
 
 ### Why This Step Exists
 - Spring Boot is a server application, not a static site.
-- Cloud Run can build and run the backend from source, so Docker does not need to be installed locally.
-- Cloud Run still gives us a managed runtime that works well with Java.
+- Railway can build and run the backend from source, so Docker does not need to be installed locally.
+- Railway still gives us a managed runtime that works well with Java.
 - This keeps Firebase Hosting focused on frontend delivery.
-- Using Cloud Run keeps the backend reproducible across environments without adding a local Docker dependency.
+- Using Railway keeps the backend reproducible across environments without adding a local Docker dependency.
 
 ### Backend Configuration Notes
 - Database connection values should come from environment variables.
 - JWT secrets should come from environment variables.
 - Mail credentials should come from environment variables.
-- Any origin restrictions or CORS rules must include the Firebase domain.
+- Any origin restrictions or CORS rules must include the Firebase Hosting domain and the Railway service URL.
 
 ### Exit Criteria
-- The backend has a stable public HTTPS URL.
+- The backend has a stable public HTTPS URL on Railway.
 - The backend starts cleanly in production.
 - The database and auth features work against the deployed backend.
 
@@ -229,7 +232,7 @@ Make the frontend talk to the deployed backend instead of localhost.
 
 ### Recommended Pattern
 - Local: `http://localhost:8080` or a Vite proxy
-- Production: the Cloud Run backend URL
+- Production: the Railway backend URL
 
 ### Exit Criteria
 - Frontend production build uses the deployed backend URL.
@@ -271,11 +274,12 @@ Make every pull request prove that the app still builds and passes checks.
 Make deploys happen automatically after code is merged.
 
 ### Tasks
-- [ ] Add Firebase Hosting deployment workflow for the frontend
-- [ ] Add Cloud Run deployment workflow for the backend
-- [ ] Store deploy credentials in GitHub Secrets
-- [ ] Restrict production deploys to `main`
-- [ ] Optionally add preview deploys for pull requests
+- [ ] Keep Firebase Hosting deployment workflow for the frontend
+- [ ] Enable Railway GitHub autodeploys for the backend
+- [ ] Configure Railway to deploy from `main`
+- [ ] Enable Railway "Wait for CI" so backend deploys only happen after GitHub Actions pass
+- [ ] Store Railway variables and secrets in Railway
+- [ ] Optionally add preview or staging environments for pull requests or feature branches
 
 ### Why This Step Exists
 - Manual deployment is slow and error-prone.
@@ -285,6 +289,7 @@ Make deploys happen automatically after code is merged.
 ### Recommended Deploy Policy
 - Pull requests: test only, optionally preview frontend
 - `main`: deploy to production
+- Railway handles backend deploys from GitHub when `main` changes
 
 ### Exit Criteria
 - A merge to `main` triggers a real production deploy.
@@ -343,7 +348,7 @@ Make production safer after deployment.
 
 ### Tasks
 - [ ] Confirm Firebase Hosting deploy history
-- [ ] Confirm Cloud Run logs are visible
+- [ ] Confirm Railway logs are visible
 - [ ] Set up alerting for backend failures if needed
 - [ ] Define a rollback process for frontend and backend
 - [ ] Document who owns production fixes
@@ -355,7 +360,7 @@ Make production safer after deployment.
 
 ### Recommended Rollback Strategy
 - Frontend: redeploy a previous known-good Hosting version
-- Backend: redeploy a previous Cloud Run revision
+- Backend: redeploy a previous Railway deployment
 
 ### Exit Criteria
 - Logs are accessible.
@@ -413,7 +418,7 @@ Prove the complete system works end to end before relying on it.
 2. Push the repo to GitHub
 3. Create the Firebase project
 4. Deploy the frontend to Firebase Hosting
-5. Deploy the backend to Cloud Run
+5. Deploy the backend to Railway
 6. Connect frontend to backend
 7. Add GitHub Actions CI
 8. Add automatic deploys
@@ -440,8 +445,8 @@ Prove the complete system works end to end before relying on it.
 - [ ] Preview deploys enabled
 
 ### Backend
-- [ ] Backend deployed to Cloud Run
-- [ ] Cloud Run service created
+- [ ] Backend deployed to Railway
+- [ ] Railway service created
 - [ ] Production backend URL verified
 - [ ] Database connected
 
@@ -462,7 +467,7 @@ Prove the complete system works end to end before relying on it.
 Use this section while implementing:
 - Firebase project ID:
 - Frontend Hosting site name:
-- Cloud Run service name:
+- Railway service name:
 - Production backend URL:
 - Production frontend URL:
 - Database host:
@@ -474,7 +479,7 @@ Use this section while implementing:
 This plan is complete when:
 - the code is in GitHub
 - the frontend is hosted on Firebase Hosting
-- the backend is deployed on Cloud Run from source
+- the backend is deployed on Railway from source
 - deploys happen through GitHub Actions
 - production uses environment variables instead of hardcoded secrets
 - the app can be updated safely without manual server work
